@@ -2,6 +2,7 @@ package boil
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 )
@@ -14,6 +15,19 @@ var DebugMode = false
 
 // DebugWriter is where the debug output will be sent if DebugMode is true
 var DebugWriter io.Writer = os.Stdout
+
+type debugFn func(ctx context.Context, query string, args []interface{})
+
+// DebugFn allows for customized debug logging. The default implementation
+// logs the query and args to the DebugWriter. This function is called when
+// a query is executed.
+var DebugFn debugFn = func(ctx context.Context, query string, args []interface{}) {
+	if DebugMode {
+		writer := DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, args)
+	}
+}
 
 // WithDebug modifies a context to configure debug writing. If true,
 // all queries made using this context will be outputted to the io.Writer
